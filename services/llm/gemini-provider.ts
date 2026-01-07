@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI } from '@google/genai/web';
 import {
   LLMProvider,
   LLMConfig,
@@ -67,15 +67,17 @@ export class GeminiProvider implements LLMProvider {
 
     const startTime = Date.now();
     try {
-      await this.client.models.generateContent({
+      const response = await this.client.models.generateContent({
         model: this.config.model,
         contents: 'Hi',
       });
+      console.log('Gemini health check response:', response.text);
       return {
         available: true,
         latencyMs: Date.now() - startTime,
       };
     } catch (error: any) {
+      console.error('Gemini health check error:', error);
       return {
         available: false,
         latencyMs: Date.now() - startTime,

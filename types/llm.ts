@@ -77,21 +77,30 @@ export const OPENAI_MODELS: LLMModelInfo[] = [
 
 export const GEMINI_MODELS: LLMModelInfo[] = [
   {
+    id: 'gemini-2.5-flash',
+    name: 'Gemini 2.5 Flash',
+    description: 'Fast and efficient, latest generation',
+    contextWindow: 1000000,
+    maxOutputTokens: 8192,
+    costPer1kTokens: 0.0001,
+    isDefault: true,
+  },
+  {
+    id: 'gemini-2.0-flash',
+    name: 'Gemini 2.0 Flash',
+    description: 'Previous generation flash model',
+    contextWindow: 1000000,
+    maxOutputTokens: 8192,
+    costPer1kTokens: 0.0001,
+    isDefault: false,
+  },
+  {
     id: 'gemini-1.5-pro',
     name: 'Gemini 1.5 Pro',
     description: 'Most capable Gemini model',
     contextWindow: 1000000,
     maxOutputTokens: 8192,
     costPer1kTokens: 0.00125,
-    isDefault: true,
-  },
-  {
-    id: 'gemini-1.5-flash',
-    name: 'Gemini 1.5 Flash',
-    description: 'Fast and efficient',
-    contextWindow: 1000000,
-    maxOutputTokens: 8192,
-    costPer1kTokens: 0.000075,
     isDefault: false,
   },
 ];
