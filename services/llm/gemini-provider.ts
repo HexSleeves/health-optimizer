@@ -19,7 +19,7 @@ export class GeminiProvider implements LLMProvider {
   constructor(config: Partial<LLMConfig> = {}) {
     this.config = {
       provider: 'gemini',
-      model: config.model || 'gemini-2.0-flash',
+      model: config.model || 'gemini-2.5-flash',
       apiKey: config.apiKey,
       temperature: config.temperature ?? 0.7,
       maxTokens: config.maxTokens ?? 2048,
