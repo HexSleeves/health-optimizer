@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import {
   LLMProvider,
   LLMConfig,
@@ -14,13 +14,12 @@ export class GeminiProvider implements LLMProvider {
   type = 'gemini' as const;
   name = 'Google Gemini';
   config: LLMConfig;
-  private client: GoogleGenerativeAI | null = null;
-  private model: GenerativeModel | null = null;
+  private client: GoogleGenAI | null = null;
 
   constructor(config: Partial<LLMConfig> = {}) {
     this.config = {
       provider: 'gemini',
-      model: config.model || 'gemini-1.5-flash',
+      model: config.model || 'gemini-2.0-flash',
       apiKey: config.apiKey,
       temperature: config.temperature ?? 0.7,
       maxTokens: config.maxTokens ?? 2048,
@@ -34,21 +33,13 @@ export class GeminiProvider implements LLMProvider {
 
   private initClient(): void {
     if (this.config.apiKey) {
-      this.client = new GoogleGenerativeAI(this.config.apiKey);
-      this.model = this.client.getGenerativeModel({
-        model: this.config.model,
-        generationConfig: {
-          temperature: this.config.temperature,
-          maxOutputTokens: this.config.maxTokens,
-          topP: this.config.topP,
-        },
-      });
+      this.client = new GoogleGenAI({ apiKey: this.config.apiKey });
     }
   }
 
   setConfig(config: Partial<LLMConfig>): void {
     this.config = { ...this.config, ...config };
-    if (config.apiKey || config.model) {
+    if (config.apiKey) {
       this.initClient();
     }
   }
@@ -58,7 +49,7 @@ export class GeminiProvider implements LLMProvider {
   }
 
   async isAvailable(): Promise<boolean> {
-    if (!this.client || !this.model || !this.config.apiKey) {
+    if (!this.client || !this.config.apiKey) {
       return false;
     }
     try {
@@ -70,13 +61,16 @@ export class GeminiProvider implements LLMProvider {
   }
 
   async healthCheck(): Promise<{ available: boolean; latencyMs?: number; error?: string }> {
-    if (!this.model || !this.config.apiKey) {
+    if (!this.client || !this.config.apiKey) {
       return { available: false, error: 'API key not configured' };
     }
 
     const startTime = Date.now();
     try {
-      await this.model.generateContent('Hi');
+      await this.client.models.generateContent({
+        model: this.config.model,
+        contents: 'Hi',
+      });
       return {
         available: true,
         latencyMs: Date.now() - startTime,
@@ -91,7 +85,7 @@ export class GeminiProvider implements LLMProvider {
   }
 
   async complete(prompt: string, context: LLMContext): Promise<string> {
-    if (!this.model) {
+    if (!this.client) {
       throw new LLMError(
         'Gemini client not initialized. Please configure API key.',
         'API_KEY_MISSING',
@@ -104,9 +98,17 @@ export class GeminiProvider implements LLMProvider {
     const fullPrompt = this.buildPrompt(systemPrompt, prompt, context);
 
     try {
-      const result = await this.model.generateContent(fullPrompt);
-      const response = result.response;
-      const content = response.text();
+      const response = await this.client.models.generateContent({
+        model: this.config.model,
+        contents: fullPrompt,
+        config: {
+          temperature: this.config.temperature,
+          maxOutputTokens: this.config.maxTokens,
+          topP: this.config.topP,
+        },
+      });
+
+      const content = response.text;
 
       if (!content) {
         throw new LLMError(
@@ -127,7 +129,7 @@ export class GeminiProvider implements LLMProvider {
     prompt: string,
     context: LLMContext
   ): AsyncIterable<StreamChunk> {
-    if (!this.model) {
+    if (!this.client) {
       yield {
         type: 'error',
         error: 'Gemini client not initialized. Please configure API key.',
@@ -139,10 +141,18 @@ export class GeminiProvider implements LLMProvider {
     const fullPrompt = this.buildPrompt(systemPrompt, prompt, context);
 
     try {
-      const result = await this.model.generateContentStream(fullPrompt);
+      const response = await this.client.models.generateContentStream({
+        model: this.config.model,
+        contents: fullPrompt,
+        config: {
+          temperature: this.config.temperature,
+          maxOutputTokens: this.config.maxTokens,
+          topP: this.config.topP,
+        },
+      });
 
-      for await (const chunk of result.stream) {
-        const text = chunk.text();
+      for await (const chunk of response) {
+        const text = chunk.text;
         if (text) {
           yield { type: 'content', content: text };
         }

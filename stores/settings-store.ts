@@ -60,12 +60,12 @@ interface SettingsActions {
 
 const initialState: SettingsState = {
   // LLM defaults
-  llmProvider: 'openai',
-  llmModel: 'gpt-4o',
+  llmProvider: process.env.EXPO_PUBLIC_GEMINI_API_KEY ? 'gemini' : 'openai',
+  llmModel: process.env.EXPO_PUBLIC_GEMINI_API_KEY ? 'gemini-2.0-flash' : 'gpt-4o',
   llmTemperature: 0.7,
   llmMaxTokens: 2048,
-  openaiApiKey: null,
-  geminiApiKey: null,
+  openaiApiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY || null,
+  geminiApiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY || null,
   localModelEnabled: false,
   localModelName: 'llama-3-8b-health',
   fallbackEnabled: true,

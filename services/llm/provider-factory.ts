@@ -18,19 +18,19 @@ export function getProvider(type: LLMProviderType, config?: Partial<LLMConfig>):
         openaiProvider = new OpenAIProvider(config);
       }
       return openaiProvider;
-      
+
     case 'gemini':
       if (!geminiProvider || config) {
         geminiProvider = new GeminiProvider(config);
       }
       return geminiProvider;
-      
+
     case 'local':
       if (!localProvider || config) {
         localProvider = new LocalProvider(config);
       }
       return localProvider;
-      
+
     default:
       throw new Error(`Unknown provider type: ${type}`);
   }

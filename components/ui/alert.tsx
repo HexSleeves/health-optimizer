@@ -76,11 +76,12 @@ export function Alert({
             {title}
           </Text>
         )}
-        {typeof children === 'string' ? (
-          <Text className={clsx('text-sm', style.text)}>{children}</Text>
-        ) : (
-          children
-        )}
+        {React.Children.map(children, (child) => {
+          if (typeof child === 'string') {
+            return <Text className={clsx('text-sm', style.text)}>{child}</Text>;
+          }
+          return child;
+        })}
       </View>
     </View>
   );

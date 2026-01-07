@@ -5,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useSettingsStore } from '@/stores/settings-store';
+import { updateProviderConfig } from '@/services/llm';
 import '../global.css';
 
 // Prevent the splash screen from auto-hiding (only on native)
@@ -16,12 +18,24 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     // Add custom fonts here if needed
   });
+  
+  const { geminiApiKey, openaiApiKey, llmProvider } = useSettingsStore();
 
   useEffect(() => {
     if (fontsLoaded && Platform.OS !== 'web') {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+  
+  // Initialize LLM providers with API keys from env/store
+  useEffect(() => {
+    if (geminiApiKey) {
+      updateProviderConfig('gemini', { apiKey: geminiApiKey });
+    }
+    if (openaiApiKey) {
+      updateProviderConfig('openai', { apiKey: openaiApiKey });
+    }
+  }, [geminiApiKey, openaiApiKey]);
 
   if (!fontsLoaded) {
     return null;

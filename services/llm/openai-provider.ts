@@ -36,6 +36,7 @@ export class OpenAIProvider implements LLMProvider {
   private initClient(): void {
     if (this.config.apiKey) {
       this.client = new OpenAI({
+        dangerouslyAllowBrowser: true,
         apiKey: this.config.apiKey,
       });
     }
@@ -189,7 +190,7 @@ export class OpenAIProvider implements LLMProvider {
     // Add conversation history (limited to avoid context overflow)
     const historyLimit = context.maxHistoryMessages || 10;
     const recentHistory = context.conversationHistory.slice(-historyLimit);
-    
+
     for (const msg of recentHistory) {
       if (msg.role === 'user' || msg.role === 'assistant') {
         messages.push({
